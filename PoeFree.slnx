@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PoeFree.App/PoeFree.App.csproj" />
+    <Project Path="src/PoeFree.Cli/PoeFree.Cli.csproj" />
+    <Project Path="src/PoeFree.Core/PoeFree.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PoeFree.Tests/PoeFree.Tests.csproj" />
+  </Folder>
+</Solution>

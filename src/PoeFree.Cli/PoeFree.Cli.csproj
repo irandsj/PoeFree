@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>poefree-cli</AssemblyName>
+    <RootNamespace>PoeFree.Cli</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PoeFree.Core\PoeFree.Core.csproj" />
+  </ItemGroup>
+
+</Project>

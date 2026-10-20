@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Test
+        run: dotnet test tests/PoeFree.Tests -c Release
+      - name: Publish
+        shell: pwsh
+        run: ./publish.ps1 -Runtime win-x64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PoeFree-win-x64
+          path: publish/win-x64
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish/win-x64/* -DestinationPath PoeFree-win-x64.zip
+          gh release create "${{ github.ref_name }}" PoeFree-win-x64.zip --generate-notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

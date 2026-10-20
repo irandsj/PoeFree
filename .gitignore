@@ -1,0 +1,20 @@
+bin/
+obj/
+publish/
+artifacts/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+TestResults/
+*.log
+
+# Proprietary Oodle runtime: never commit it.
+oo2core*.dll
+liboo2core*
+
+# Game files must never be committed.
+*.ggpk
+*.bundle.bin
+_.index.bin
