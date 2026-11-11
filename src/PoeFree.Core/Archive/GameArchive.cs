@@ -52,8 +52,10 @@ public sealed class GameArchive : IDisposable {
 			Version = GameDetector.GuessVersion(ArchivePath, ggpk.Version);
 		} else {
 			factory = new SteamBundleFactory(Path.GetDirectoryName(ArchivePath)!, cdnUrl);
-			var fs = readOnly
-				? new FileStream(ArchivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete)
+			// Read only: keep a copy in memory, not an open file. Steam and Epic update the game by replacing _.index.bin,
+			// which Windows refuses while anyone has it open, and PoeFree may stay open (watching) while the game updates.
+			Stream fs = readOnly
+				? new MemoryStream(ReadRawIndex(ArchivePath), false)
 				: new FileStream(ArchivePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
 			try {
 				Index = new Index(fs, false, false, factory);

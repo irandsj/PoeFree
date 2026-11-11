@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PoeFree.Core.Diagnostics;
@@ -18,8 +19,12 @@ public sealed partial class MainViewModel {
 
 	[ObservableProperty] private bool updateAvailable;
 	[ObservableProperty] private string updateMessage = "";
-	string? updateUrl;
-	string? updateTag;
+	[ObservableProperty] private bool isUpdating;
+	UpdateInfo? updateInfo;
+
+	/// <summary>A published PoeFree can replace itself; a development build (or a release without package) opens the download page.</summary>
+	bool CanSelfUpdate => updateInfo?.PackageUrl is not null && SelfUpdater.InstallDirectory is not null;
+	public string UpdateButtonText => Loc.T(CanSelfUpdate ? "update.now" : "update.download");
 
 	public bool CheckUpdatesAtStartup {
 		get => app.CheckUpdates;
@@ -144,8 +149,8 @@ public sealed partial class MainViewModel {
 					await dialogs.Info(Loc.F("update.none", UpdateChecker.CurrentVersion.ToString(3)));
 				return;
 			}
-			updateUrl = info.Url;
-			updateTag = info.Tag;
+			updateInfo = info;
+			OnPropertyChanged(nameof(UpdateButtonText));
 			UpdateMessage = Loc.F("update.available", info.Tag, UpdateChecker.CurrentVersion.ToString(3));
 			UpdateAvailable = true;
 			Log(UpdateMessage + " " + info.Url);
@@ -157,15 +162,46 @@ public sealed partial class MainViewModel {
 		}
 	}
 
+	/// <summary>Downloads the new version, verifies it, swaps the files of this install and restarts PoeFree.</summary>
 	[RelayCommand]
-	void OpenUpdate() {
-		if (updateUrl is not null)
-			OpenUrl(updateUrl);
+	async Task UpdateNow() {
+		if (updateInfo is not { } info || IsUpdating || IsBusy)
+			return;
+		var dir = SelfUpdater.InstallDirectory;
+		if (dir is null || info.PackageUrl is null) {
+			OpenUrl(info.Url);
+			return;
+		}
+		var message = UpdateMessage;
+		IsUpdating = true;
+		try {
+			SaveAll();
+			Log($"Updating PoeFree to {info.Tag}: {info.PackageUrl}");
+			var progress = new Progress<double>(p => {
+				if (IsUpdating)
+					UpdateMessage = Loc.F("update.downloading", info.Tag, p * 100);
+			});
+			UpdateMessage = Loc.F("update.downloading", info.Tag, 0.0);
+			var files = await SelfUpdater.UpdateAsync(info, dir, progress);
+			IsUpdating = false;
+			Log($"PoeFree {info.Tag} installed ({string.Join(", ", files)}). Restarting.");
+			UpdateMessage = Loc.F("update.restarting", info.Tag);
+			Process.Start(new ProcessStartInfo(SelfUpdater.GuiPath(dir)) { WorkingDirectory = dir, UseShellExecute = true, Arguments = App.RestartedSwitch })?.Dispose();
+			dialogs.Exit();
+		} catch (Exception e) {
+			IsUpdating = false;
+			UpdateMessage = message;
+			Log("Update failed: " + e);
+			if (await dialogs.Confirm(Loc.F("update.installFailed", e.Message)))
+				OpenUrl(info.Url);
+		}
 	}
 
 	[RelayCommand]
 	void IgnoreUpdate() {
-		app.IgnoredUpdate = updateTag;
+		if (IsUpdating)
+			return;
+		app.IgnoredUpdate = updateInfo?.Tag;
 		UpdateAvailable = false;
 		SaveAll();
 	}

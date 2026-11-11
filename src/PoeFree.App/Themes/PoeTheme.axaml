@@ -1,0 +1,554 @@
+<!--
+  PoE Verdant: Path of Exile 1 look (dark stone panels, bronze/gold frames, Fontin
+  SmallCaps, ornate dividers) with the game's red-orange accent replaced by green.
+  See .design/branding/_style-poe-verdant/patterns/STYLE.md.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Styles.Resources>
+    <ResourceDictionary>
+
+      <!-- Fonts -->
+      <FontFamily x:Key="PoeFont">Fontin SmallCaps, Fontin, Palatino Linotype, Book Antiqua, Georgia, serif</FontFamily>
+      <FontFamily x:Key="PoeMono">Cascadia Mono, Consolas, monospace</FontFamily>
+
+      <!-- Palette -->
+      <Color x:Key="VoidColor">#070806</Color>
+      <Color x:Key="FrameDarkColor">#2B261A</Color>
+      <Color x:Key="FrameBronzeColor">#5E4E31</Color>
+      <Color x:Key="FrameGoldColor">#8F7A4E</Color>
+      <Color x:Key="GoldLightColor">#C8B27D</Color>
+      <Color x:Key="GoldBrightColor">#E8D9A8</Color>
+      <Color x:Key="TextColor">#C9C2AE</Color>
+      <Color x:Key="MutedColor">#8A8470</Color>
+      <Color x:Key="GreenMidColor">#2F8040</Color>
+      <Color x:Key="GreenBrightColor">#5DBE5A</Color>
+
+      <SolidColorBrush x:Key="VoidBrush" Color="{StaticResource VoidColor}" />
+      <SolidColorBrush x:Key="CardBrush" Color="#0E100B" />
+      <SolidColorBrush x:Key="FieldBrush" Color="#080907" />
+      <SolidColorBrush x:Key="FrameDarkBrush" Color="{StaticResource FrameDarkColor}" />
+      <SolidColorBrush x:Key="FrameBronzeBrush" Color="{StaticResource FrameBronzeColor}" />
+      <SolidColorBrush x:Key="FrameGoldBrush" Color="{StaticResource FrameGoldColor}" />
+      <SolidColorBrush x:Key="GoldLightBrush" Color="{StaticResource GoldLightColor}" />
+      <SolidColorBrush x:Key="GoldBrightBrush" Color="{StaticResource GoldBrightColor}" />
+      <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
+      <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}" />
+      <SolidColorBrush x:Key="GreenMidBrush" Color="{StaticResource GreenMidColor}" />
+      <SolidColorBrush x:Key="GreenBrightBrush" Color="{StaticResource GreenBrightColor}" />
+      <SolidColorBrush x:Key="AmberBrush" Color="#D7A54A" />
+      <SolidColorBrush x:Key="BloodBrush" Color="#D2554A" />
+
+      <LinearGradientBrush x:Key="WindowBackgroundBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#121710" />
+        <GradientStop Offset="0.35" Color="#0B0C09" />
+        <GradientStop Offset="1" Color="#060705" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="PanelBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#13160F" />
+        <GradientStop Offset="1" Color="#0B0C09" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ButtonBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#2A2619" />
+        <GradientStop Offset="0.5" Color="#1A1810" />
+        <GradientStop Offset="1" Color="#100F0A" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ButtonHoverBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#3A3421" />
+        <GradientStop Offset="0.5" Color="#242014" />
+        <GradientStop Offset="1" Color="#15130C" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ButtonPressedBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#0D0C08" />
+        <GradientStop Offset="1" Color="#1C1a11" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="PrimaryBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#2A7438" />
+        <GradientStop Offset="0.48" Color="#1F5C2C" />
+        <GradientStop Offset="0.52" Color="#18491F" />
+        <GradientStop Offset="1" Color="#0F2A16" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="PrimaryHoverBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#3A9A4A" />
+        <GradientStop Offset="0.48" Color="#277236" />
+        <GradientStop Offset="0.52" Color="#1E5A28" />
+        <GradientStop Offset="1" Color="#123419" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="PrimaryPressedBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#0D2412" />
+        <GradientStop Offset="1" Color="#1B4E24" />
+      </LinearGradientBrush>
+      <!-- Top sheen shared by all buttons -->
+      <LinearGradientBrush x:Key="SheenBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#22FFF4D0" />
+        <GradientStop Offset="0.45" Color="#06FFF4D0" />
+        <GradientStop Offset="0.5" Color="#00000000" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="TitleBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#F3E7BF" />
+        <GradientStop Offset="0.55" Color="#C8B27D" />
+        <GradientStop Offset="1" Color="#8F7A4E" />
+      </LinearGradientBrush>
+      <!-- Header band behind panel titles -->
+      <LinearGradientBrush x:Key="HeaderBandBrush" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Offset="0" Color="#000F2A16" />
+        <GradientStop Offset="0.5" Color="#CC173F20" />
+        <GradientStop Offset="1" Color="#000F2A16" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="RuleLeftBrush" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Offset="0" Color="#008F7A4E" />
+        <GradientStop Offset="1" Color="#FF8F7A4E" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="RuleRightBrush" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Offset="0" Color="#FF8F7A4E" />
+        <GradientStop Offset="1" Color="#008F7A4E" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="RuleFadeBrush" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Offset="0" Color="#008F7A4E" />
+        <GradientStop Offset="0.5" Color="#FF8F7A4E" />
+        <GradientStop Offset="1" Color="#008F7A4E" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="TabBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#221F15" />
+        <GradientStop Offset="1" Color="#0F0E0A" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="TabSelectedBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#245F30" />
+        <GradientStop Offset="1" Color="#0F2414" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ProgressBrush" StartPoint="50%,0%" EndPoint="50%,100%">
+        <GradientStop Offset="0" Color="#7BDA6E" />
+        <GradientStop Offset="0.5" Color="#3C9A45" />
+        <GradientStop Offset="1" Color="#1C5726" />
+      </LinearGradientBrush>
+
+      <!-- Fluent resource overrides: square, sunken, bronze-framed controls -->
+      <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+      <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+      <StaticResource x:Key="TextControlBackground" ResourceKey="FieldBrush" />
+      <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="FieldBrush" />
+      <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="FieldBrush" />
+      <StaticResource x:Key="TextControlBorderBrush" ResourceKey="FrameBronzeBrush" />
+      <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="FrameGoldBrush" />
+      <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="GreenBrightBrush" />
+      <StaticResource x:Key="TextControlForeground" ResourceKey="TextBrush" />
+      <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="TextBrush" />
+      <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="GoldBrightBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForeground" ResourceKey="MutedBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundPointerOver" ResourceKey="MutedBrush" />
+      <StaticResource x:Key="TextControlPlaceholderForegroundFocused" ResourceKey="MutedBrush" />
+      <SolidColorBrush x:Key="TextControlSelectionHighlightColor" Color="#2F8040" />
+      <StaticResource x:Key="ComboBoxBackground" ResourceKey="ButtonBrush" />
+      <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="ButtonHoverBrush" />
+      <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="ButtonPressedBrush" />
+      <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="FrameBronzeBrush" />
+      <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="FrameGoldBrush" />
+      <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="FrameGoldBrush" />
+      <StaticResource x:Key="ComboBoxForeground" ResourceKey="GoldLightBrush" />
+      <StaticResource x:Key="ComboBoxForegroundPointerOver" ResourceKey="GoldBrightBrush" />
+      <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="FrameGoldBrush" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#0C0D0A" />
+      <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="FrameGoldBrush" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundPointerOver" Color="#1C2216" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundSelected" Color="#173F20" />
+      <SolidColorBrush x:Key="ComboBoxItemBackgroundSelectedPointerOver" Color="#1F5229" />
+      <SolidColorBrush x:Key="ListBoxItemBackgroundPointerOver" Color="#16190F" />
+      <SolidColorBrush x:Key="SystemControlHighlightListLowBrush" Color="#16190F" />
+      <SolidColorBrush x:Key="SystemControlHighlightListAccentLowBrush" Color="#132E19" />
+      <SolidColorBrush x:Key="SystemControlHighlightListAccentMediumBrush" Color="#18391F" />
+      <SolidColorBrush x:Key="SystemControlHighlightListAccentHighBrush" Color="#1D4626" />
+
+      <!-- Ornate divider: fading gold rules with a green-cored diamond -->
+      <ControlTheme x:Key="Ornament" TargetType="ContentControl">
+        <Setter Property="Height" Value="14" />
+        <Setter Property="IsHitTestVisible" Value="False" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Grid ColumnDefinitions="*,Auto,*">
+              <Rectangle Height="1" Fill="{StaticResource RuleLeftBrush}" VerticalAlignment="Center" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="5" Margin="8,0">
+                <Rectangle Width="4" Height="4" Fill="{StaticResource FrameGoldBrush}" VerticalAlignment="Center">
+                  <Rectangle.RenderTransform><RotateTransform Angle="45" /></Rectangle.RenderTransform>
+                </Rectangle>
+                <Border Width="9" Height="9" Background="{StaticResource GreenMidBrush}" BorderBrush="{StaticResource GoldLightBrush}" BorderThickness="1"
+                        BoxShadow="0 0 6 0 #805DBE5A" VerticalAlignment="Center">
+                  <Border.RenderTransform><RotateTransform Angle="45" /></Border.RenderTransform>
+                </Border>
+                <Rectangle Width="4" Height="4" Fill="{StaticResource FrameGoldBrush}" VerticalAlignment="Center">
+                  <Rectangle.RenderTransform><RotateTransform Angle="45" /></Rectangle.RenderTransform>
+                </Rectangle>
+              </StackPanel>
+              <Rectangle Grid.Column="2" Height="1" Fill="{StaticResource RuleRightBrush}" VerticalAlignment="Center" />
+            </Grid>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+
+      <!-- Button: bevelled bronze plate; .primary is the green plate -->
+      <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource ButtonBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FrameBronzeBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{StaticResource GoldLightBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="14,5" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Name="Outer" Background="{StaticResource VoidBrush}" Padding="1">
+              <Border Name="Frame" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}" BoxShadow="inset 0 0 0 1 #66000000">
+                <Border.Transitions>
+                  <Transitions>
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.12" />
+                  </Transitions>
+                </Border.Transitions>
+                <Panel>
+                  <Border Name="Sheen" Background="{StaticResource SheenBrush}" IsHitTestVisible="False" />
+                  <ContentPresenter Name="PART_ContentPresenter"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Padding="{TemplateBinding Padding}"
+                                    Foreground="{TemplateBinding Foreground}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                    RecognizesAccessKey="True" />
+                </Panel>
+              </Border>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover">
+          <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource FrameGoldBrush}" />
+          <Setter Property="Foreground" Value="{StaticResource GoldBrightBrush}" />
+        </Style>
+        <Style Selector="^:pointerover /template/ Border#Frame">
+          <Setter Property="BoxShadow" Value="inset 0 0 0 1 #66000000, 0 0 10 0 #408F7A4E" />
+        </Style>
+        <Style Selector="^:pressed">
+          <Setter Property="Background" Value="{StaticResource ButtonPressedBrush}" />
+        </Style>
+        <Style Selector="^:pressed /template/ ContentPresenter#PART_ContentPresenter">
+          <Setter Property="RenderTransform" Value="translate(0px, 1px)" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Sheen">
+          <Setter Property="Opacity" Value="0" />
+        </Style>
+        <Style Selector="^:disabled">
+          <Setter Property="Opacity" Value="0.4" />
+        </Style>
+        <Style Selector="^:focus-visible /template/ Border#Outer">
+          <Setter Property="Background" Value="{StaticResource GreenBrightBrush}" />
+        </Style>
+
+        <Style Selector="^.primary">
+          <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource GreenMidBrush}" />
+          <Setter Property="Foreground" Value="{StaticResource GoldBrightBrush}" />
+        </Style>
+        <Style Selector="^.primary /template/ Border#Frame">
+          <Setter Property="BoxShadow" Value="inset 0 0 0 1 #55000000, 0 0 8 0 #302F8040" />
+        </Style>
+        <Style Selector="^.primary:pointerover">
+          <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource GreenBrightBrush}" />
+          <Setter Property="Foreground" Value="#FFF8E2" />
+        </Style>
+        <Style Selector="^.primary:pointerover /template/ Border#Frame">
+          <Setter Property="BoxShadow" Value="inset 0 0 0 1 #55000000, 0 0 14 1 #809BEA86" />
+        </Style>
+        <Style Selector="^.primary:pressed">
+          <Setter Property="Background" Value="{StaticResource PrimaryPressedBrush}" />
+        </Style>
+
+        <!-- Small square icon button (remove ✕ etc.) -->
+        <Style Selector="^.icon">
+          <Setter Property="Padding" Value="0" />
+          <Setter Property="MinHeight" Value="26" />
+          <Setter Property="Width" Value="26" />
+          <Setter Property="Height" Value="26" />
+          <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="^.icon:pointerover">
+          <Setter Property="Foreground" Value="{StaticResource BloodBrush}" />
+        </Style>
+      </ControlTheme>
+
+      <!-- CheckBox: sunken bronze socket with a green check -->
+      <ControlTheme x:Key="{x:Type CheckBox}" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="8,0,0,0" />
+        <Setter Property="MinHeight" Value="26" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Grid ColumnDefinitions="Auto,*" Background="{TemplateBinding Background}">
+              <Border Name="Box" Width="18" Height="18" VerticalAlignment="Center"
+                      Background="{StaticResource FieldBrush}" BorderBrush="{StaticResource FrameBronzeBrush}" BorderThickness="1"
+                      BoxShadow="inset 0 0 0 1 #000000, inset 0 2 4 0 #CC000000">
+                <Border.Transitions>
+                  <Transitions>
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.12" />
+                  </Transitions>
+                </Border.Transitions>
+                <Panel>
+                  <Border Name="Fill" Margin="4" Background="{StaticResource GreenMidBrush}" Opacity="0" />
+                  <Path Name="Check" Data="M 1,6 L 5,10 L 12,1" Stroke="{StaticResource GreenBrightBrush}" StrokeThickness="2.2"
+                        StrokeLineCap="Square" Stretch="None" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0">
+                    <Path.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
+                      </Transitions>
+                    </Path.Transitions>
+                  </Path>
+                </Panel>
+              </Border>
+              <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
+                                IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Margin="{TemplateBinding Padding}"
+                                Foreground="{TemplateBinding Foreground}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RecognizesAccessKey="True" />
+            </Grid>
+          </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#Box">
+          <Setter Property="BorderBrush" Value="{StaticResource FrameGoldBrush}" />
+        </Style>
+        <Style Selector="^:pointerover">
+          <Setter Property="Foreground" Value="{StaticResource GoldBrightBrush}" />
+        </Style>
+        <Style Selector="^:checked /template/ Path#Check">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="^:checked /template/ Border#Box">
+          <Setter Property="BorderBrush" Value="{StaticResource GreenMidBrush}" />
+          <Setter Property="BoxShadow" Value="inset 0 0 0 1 #000000, inset 0 0 6 0 #6626702F, 0 0 6 0 #405DBE5A" />
+        </Style>
+        <Style Selector="^:checked">
+          <Setter Property="Foreground" Value="{StaticResource GoldBrightBrush}" />
+        </Style>
+        <Style Selector="^:indeterminate /template/ Border#Fill">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="^:disabled">
+          <Setter Property="Opacity" Value="0.4" />
+        </Style>
+        <Style Selector="^:focus-visible /template/ Border#Box">
+          <Setter Property="BorderBrush" Value="{StaticResource GreenBrightBrush}" />
+        </Style>
+      </ControlTheme>
+
+      <!-- TabControl: stash-tab strip over a framed panel -->
+      <ControlTheme x:Key="{x:Type TabControl}" TargetType="TabControl">
+        <Setter Property="ItemsPanel">
+          <ItemsPanelTemplate>
+            <WrapPanel />
+          </ItemsPanelTemplate>
+        </Setter>
+        <Setter Property="Template">
+          <ControlTemplate>
+            <DockPanel>
+              <ItemsPresenter Name="PART_ItemsPresenter" DockPanel.Dock="Top" ItemsPanel="{TemplateBinding ItemsPanel}" Margin="6,0,6,-1" ZIndex="1" />
+              <Border Classes="panel" Padding="12,10,12,12">
+                <ContentPresenter Name="PART_SelectedContentHost"
+                                  Content="{TemplateBinding SelectedContent}"
+                                  ContentTemplate="{TemplateBinding SelectedContentTemplate}" />
+              </Border>
+            </DockPanel>
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+
+      <ControlTheme x:Key="{x:Type TabItem}" TargetType="TabItem">
+        <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+        <Setter Property="Background" Value="{StaticResource TabBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource FrameDarkBrush}" />
+        <Setter Property="Padding" Value="16,7" />
+        <Setter Property="Margin" Value="0,0,3,0" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Name="Tab" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0">
+              <Panel>
+                <Border Name="Sheen" Background="{StaticResource SheenBrush}" IsHitTestVisible="False" />
+                <Rectangle Name="Accent" Height="1" VerticalAlignment="Top" Fill="{StaticResource RuleFadeBrush}" Opacity="0" />
+                <ContentPresenter Name="PART_ContentPresenter"
+                                  Content="{TemplateBinding Header}"
+                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                  Padding="{TemplateBinding Padding}"
+                                  Foreground="{TemplateBinding Foreground}"
+                                  HorizontalContentAlignment="Center"
+                                  VerticalContentAlignment="Center" />
+              </Panel>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover">
+          <Setter Property="Foreground" Value="{StaticResource GoldLightBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource FrameBronzeBrush}" />
+        </Style>
+        <Style Selector="^:selected">
+          <Setter Property="Background" Value="{StaticResource TabSelectedBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource FrameGoldBrush}" />
+          <Setter Property="Foreground" Value="{StaticResource GoldBrightBrush}" />
+        </Style>
+        <Style Selector="^:selected /template/ Rectangle#Accent">
+          <Setter Property="Fill" Value="{StaticResource GreenBrightBrush}" />
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+      </ControlTheme>
+
+    </ResourceDictionary>
+  </Styles.Resources>
+
+  <!-- Base typography -->
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+    <Setter Property="FontSize" Value="14" />
+  </Style>
+  <Style Selector="PopupRoot">
+    <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+  </Style>
+  <Style Selector="ComboBoxItem">
+    <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.h1">
+    <Setter Property="FontSize" Value="30" />
+    <Setter Property="Foreground" Value="{StaticResource TitleBrush}" />
+    <Setter Property="LetterSpacing" Value="1" />
+  </Style>
+  <Style Selector="TextBlock.h2">
+    <Setter Property="FontSize" Value="17" />
+    <Setter Property="Foreground" Value="{StaticResource GoldLightBrush}" />
+    <Setter Property="LetterSpacing" Value="0.5" />
+    <Setter Property="Margin" Value="0,10,0,4" />
+  </Style>
+  <Style Selector="TextBlock.label">
+    <Setter Property="Foreground" Value="{StaticResource GoldLightBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="TextBlock.muted">
+    <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <!-- Framed panel: black rule, bronze rule, black inner rule -->
+  <Style Selector="Border.panel">
+    <Setter Property="Background" Value="{StaticResource PanelBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource FrameBronzeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="inset 0 0 0 1 #000000, inset 0 0 30 0 #99000000, 0 0 0 1 #000000, 0 4 14 0 #AA000000" />
+  </Style>
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{StaticResource CardBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource FrameDarkBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BoxShadow" Value="inset 0 0 0 1 #000000, inset 0 1 12 0 #66000000" />
+    <Setter Property="Padding" Value="12" />
+    <Setter Property="Margin" Value="0,0,0,10" />
+  </Style>
+  <!-- Centered panel title over a fading green band -->
+  <Style Selector="Border.header">
+    <Setter Property="Background" Value="{StaticResource HeaderBandBrush}" />
+    <Setter Property="Padding" Value="0,5" />
+    <Setter Property="Margin" Value="-12,-12,-12,4" />
+  </Style>
+  <Style Selector="Border.header TextBlock">
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="FontSize" Value="17" />
+    <Setter Property="Foreground" Value="{StaticResource GoldLightBrush}" />
+    <Setter Property="LetterSpacing" Value="0.6" />
+  </Style>
+
+  <Style Selector="Border.badge">
+    <Setter Property="Background" Value="#2A2210" />
+    <Setter Property="BorderBrush" Value="#7A5F28" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="6,0" />
+    <Setter Property="Margin" Value="6,0,0,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+  <Style Selector="Border.banner">
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Padding" Value="12,8" />
+    <Setter Property="BoxShadow" Value="inset 0 0 0 1 #000000" />
+  </Style>
+  <Style Selector="Border.banner.info">
+    <Setter Property="Background" Value="#10142A" />
+    <Setter Property="BorderBrush" Value="#4C5799" />
+  </Style>
+  <Style Selector="Border.banner.warn">
+    <Setter Property="Background" Value="#1F1809" />
+    <Setter Property="BorderBrush" Value="#7A5F28" />
+  </Style>
+  <Style Selector="Border.banner.danger">
+    <Setter Property="Background" Value="#220E0B" />
+    <Setter Property="BorderBrush" Value="#7A2E25" />
+  </Style>
+
+  <Style Selector="Button">
+    <Setter Property="Margin" Value="0,0,6,0" />
+  </Style>
+
+  <!-- Inputs and lists -->
+  <Style Selector="TextBox">
+    <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+    <Setter Property="SelectionBrush" Value="#2F8040" />
+    <Setter Property="CaretBrush" Value="{StaticResource GreenBrightBrush}" />
+  </Style>
+  <Style Selector="TextBox.mono">
+    <Setter Property="FontFamily" Value="{StaticResource PoeMono}" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+  <Style Selector="ComboBox">
+    <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+    <Setter Property="MinHeight" Value="30" />
+  </Style>
+  <Style Selector="ListBox">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="ListBoxItem">
+    <Setter Property="Padding" Value="10,6" />
+  </Style>
+  <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{StaticResource GreenMidBrush}" />
+    <Setter Property="BorderThickness" Value="2,0,0,0" />
+  </Style>
+
+  <Style Selector="ProgressBar">
+    <Setter Property="Foreground" Value="{StaticResource ProgressBrush}" />
+    <Setter Property="Background" Value="{StaticResource FieldBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource FrameBronzeBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="MinHeight" Value="10" />
+    <Setter Property="CornerRadius" Value="0" />
+  </Style>
+
+  <Style Selector="ToolTip">
+    <Setter Property="Background" Value="#F2080906" />
+    <Setter Property="BorderBrush" Value="{StaticResource FrameGoldBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    <Setter Property="FontFamily" Value="{StaticResource PoeFont}" />
+    <Setter Property="FontSize" Value="13" />
+    <Setter Property="Padding" Value="10,6" />
+    <Setter Property="CornerRadius" Value="0" />
+  </Style>
+</Styles>

@@ -64,6 +64,19 @@ ScriptBlocks / ObjectScript  parser dos blocos { } dos scripts (ignora chaves de
 5. Roda os geradores: cores de mods, marcadores e rastreadores de minimapa.
 6. Grava tudo num bundle novo, `Bundles2/LibGGPK3/N.bundle.bin`, e salva o índice.
 7. Guarda o hash do índice gravado. Se outro programa mexer no índice depois, o backup não é usado e a restauração baixa o índice oficial.
+8. Guarda também a "impressão digital" das opções usadas (`PatchSettings.Fingerprint`: opções, valores, lista de ignorados e versão do PoeFree). Com ela dá para saber se os arquivos já estão com exatamente estas opções (`RestoreService.IsUpToDate`).
+
+### Vigia de atualizações do jogo
+
+O PoeFree nunca abre, fecha nem mexe no processo do jogo. Tudo sai dos arquivos e do log que o próprio jogo escreve.
+
+- `GameProbe` (Core/Game) diz se o jogo está rodando (processos do jogo cuja pasta é a da instalação) e qual versão está instalada. A versão vem do log do jogo (`logs/LatestClient.txt`, ou o fim do `Client.txt`): a linha `Web root: https://patch.poecdn.com/<versão>/` de uma sessão que chegou a `Finished checking files`.
+- `GameUpdateTracker` (Core/Diagnostics) guarda em `%APPDATA%\PoeFree\updates\<id>` o último índice **original** visto (`baseline.index.bin` + `baseline.json`). Quando os arquivos estão com o patch do PoeFree, o original é o backup feito antes de aplicar. Se outro programa mexeu no índice, não há com o que comparar e nada é relatado.
+- A janela chama `Poll` a cada 5 s. Ele só lê o índice de novo se o arquivo mudou (tamanho/data), e a cada 12 voltas de qualquer jeito. Um índice original diferente do guardado só conta como atualização se aparecer igual em duas leituras seguidas.
+- Na atualização: `IndexDiff.Compare` compara os dois índices (arquivos adicionados, removidos, com outro tamanho ou só movidos; nenhum arquivo é lido), o `CompatibilityCheck` roda nos arquivos novos e `GameUpdateReport` junta tudo com o diagnóstico anterior num `.md`. O botão **Copiar pedido de análise** põe na área de transferência um pedido pronto e o relatório com as listas cortadas em 40 linhas (`GameUpdateReport.Shorten`).
+- Se a atualização tirou as opções, elas são reaplicadas pelo mesmo `PatchEngine` do botão Aplicar quando o jogo está fechado há duas voltas e o arquivo está 20 s sem mudar. Enquanto grava, a janela não deixa fechar. Se falhar, espera 10 min antes de tentar de novo.
+- Em modo leitura, o índice do formato Steam/Epic é lido para a memória e o arquivo é fechado: o PoeFree pode ficar aberto sem impedir a Steam ou a Epic de trocar o `_.index.bin`. O `Content.ggpk` fica aberto só para leitura, com compartilhamento total, porque o jogo standalone grava dentro dele.
+- `PoeFree.exe --tray` (usado pelo "Iniciar com o Windows") começa sem janela, só com o ícone na área de notificação. Um mutex por pasta de dados garante uma cópia só; abrir de novo avisa a que já roda para mostrar a janela.
 
 ### Fluxo de "Restaurar"
 
@@ -102,6 +115,18 @@ Os bundles originais **nunca** são modificados.
 - O relatório fica salvo em `%APPDATA%\PoeFree\compatibility` junto com o hash do `_.index.bin`. Quando o hash muda (o jogo atualizou) ou o PoeFree muda de versão, a verificação roda de novo ao abrir o jogo.
 - Depois de cada **Aplicar**, as opções escolhidas também são avaliadas, e as que não alteraram nada aparecem num aviso.
 - `UpdateChecker` consulta `api.github.com/repos/<repo>/releases/latest` e compara a tag (`v1.2.3`) com a versão do programa.
+
+### Atualização do próprio PoeFree
+
+`SelfUpdater` (Core/Diagnostics), usado pelo botão **Atualizar agora** e por `poefree-cli update --install`:
+
+1. Pega do release o pacote da plataforma (`PoeFree-win-x64.zip`) e o `digest` SHA-256 que o GitHub publica para ele.
+2. Baixa (só por HTTPS) para uma pasta temporária e confere o SHA-256. Se não bater, nada é instalado.
+3. Confere se o zip tem mesmo um `PoeFree.exe` de tamanho plausível. Só os arquivos da raiz do pacote são instalados, sempre dentro da pasta do programa.
+4. Um executável em uso não pode ser sobrescrito no Windows, mas pode ser renomeado: os arquivos atuais viram `*.old`, os novos entram no lugar e o programa reinicia. Se algo falhar no meio, os `*.old` voltam ao lugar.
+5. Na próxima abertura, os `*.old` são apagados.
+
+Só funciona na versão publicada (arquivo único). Rodando pelo `dotnet run`, o botão apenas abre a página do release.
 
 Exemplo real: a primeira verificação no PoE2 mostrou que as descrições de stats ficam em `data/statdescriptions/*.csd`, e não em `metadata/statdescriptions/*.txt` como no PoE1. As cores de mods foram ajustadas para os dois formatos.
 

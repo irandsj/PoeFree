@@ -26,6 +26,8 @@ public interface IDialogs {
 	Task<string?> PickFolder(string title);
 	Task SetClipboard(string text);
 	void RestartUi();
+	/// <summary>Closes the application.</summary>
+	void Exit();
 }
 
 public sealed partial class MainViewModel : ObservableObject {
@@ -126,6 +128,7 @@ public sealed partial class MainViewModel : ObservableObject {
 			Installs.Add(i);
 			Log("Found: " + i.DisplayName);
 		}
+		StartWatching();
 		var last = app.LastArchive is not null && File.Exists(app.LastArchive) ? app.LastArchive : installs.FirstOrDefault()?.ArchivePath;
 		if (last is not null) {
 			var match = Installs.FirstOrDefault(i => i.ArchivePath.Equals(last, StringComparison.OrdinalIgnoreCase));
@@ -175,7 +178,7 @@ public sealed partial class MainViewModel : ObservableObject {
 			stats = null;
 			StatResults.Clear();
 			_ = LoadIconsAsync();
-			_ = AfterArchiveOpenedAsync(path);
+			afterOpen = AfterArchiveOpenedAsync(path);
 		} catch (Exception e) {
 			StatusText = e.Message;
 			Log("Open failed: " + e);
@@ -322,6 +325,7 @@ public sealed partial class MainViewModel : ObservableObject {
 		SaveAll();
 		var path = ArchivePath;
 		IsBusy = true;
+		IsWriting = true;
 		Progress = 0;
 		SelectedTab = TabLog;
 		await CloseArchiveAsync();
@@ -331,16 +335,21 @@ public sealed partial class MainViewModel : ObservableObject {
 			var settings = Settings.Clone();
 			var ignore = IgnoreList.Parse(IgnoreText);
 			var summary = await Task.Run(() => PatchEngine.ApplyAsync(path, settings, ignore, log, progress));
+			IsWriting = false;
 			var warning = DescribeApplyProblems(summary);
 			if (warning.Length > 0)
 				await dialogs.Error(Loc.F("done.apply", summary.FilesChanged, summary.FilesAdded, summary.Elapsed.TotalSeconds) + warning);
 			else
 				await dialogs.Info(Loc.F("done.apply", summary.FilesChanged, summary.FilesAdded, summary.Elapsed.TotalSeconds));
 		} catch (Exception e) {
+			IsWriting = false;
 			Log("Apply failed: " + e);
 			await dialogs.Error(Friendly(e));
 		} finally {
+			IsWriting = false;
 			IsBusy = false;
+			resultNote = null;
+			forcePoll = true;
 			await OpenArchiveAsync(path);
 		}
 	}
@@ -356,16 +365,22 @@ public sealed partial class MainViewModel : ObservableObject {
 		var path = ArchivePath;
 		var version = archive?.Version ?? GameDetector.GuessVersion(path);
 		IsBusy = true;
+		IsWriting = true;
 		SelectedTab = TabLog;
 		await CloseArchiveAsync();
 		try {
 			var outcome = await Task.Run(() => RestoreService.RestoreAsync(path, version, new Progress<string>(Log)));
+			IsWriting = false;
 			await dialogs.Info(Loc.F("done.restore", outcome));
 		} catch (Exception e) {
+			IsWriting = false;
 			Log("Restore failed: " + e);
 			await dialogs.Error(Friendly(e));
 		} finally {
+			IsWriting = false;
 			IsBusy = false;
+			resultNote = null;
+			forcePoll = true;
 			await OpenArchiveAsync(path);
 		}
 	}

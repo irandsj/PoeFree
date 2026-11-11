@@ -9,22 +9,50 @@ namespace PoeFree.App.Views;
 
 public partial class MainWindow : Window, IDialogs {
 	readonly MainViewModel vm;
+	readonly AppSettings settings;
+	bool started;
 
 	public MainWindow() : this(new AppSettings()) { } // designer
 
 	public MainWindow(AppSettings settings) {
 		InitializeComponent();
+		this.settings = settings;
 		vm = new MainViewModel(settings, this);
 		DataContext = vm;
-		Opened += async (_, _) => await vm.InitializeAsync();
-		Closing += (_, _) => vm.SaveAll();
+		Opened += (_, _) => Start();
+		Closing += (_, e) => {
+			vm.SaveAll();
+			if (vm.IsWriting) {
+				// Closing in the middle of a write could leave the game files half written.
+				e.Cancel = true;
+				vm.StatusText = Loc.T("watch.busy");
+				return;
+			}
+			var byUser = !e.IsProgrammatic && e.CloseReason == WindowCloseReason.WindowClosing;
+			if (byUser && settings.KeepInTray && Application.Current is App { HasTrayIcon: true }) {
+				e.Cancel = true;
+				Hide();
+			}
+		};
+		Closed += (_, _) => vm.StopWatching();
+		vm.AttentionRequested += () => (Application.Current as App)?.ShowMainWindow();
 		vm.PropertyChanged += (_, e) => {
 			if (e.PropertyName == nameof(MainViewModel.LogText) && this.FindControl<TextBox>("LogBox") is { } box)
 				box.CaretIndex = box.Text?.Length ?? 0;
 		};
 	}
 
+	/// <summary>Loads the game and starts watching it. Runs when the window opens, or right away when PoeFree starts hidden.</summary>
+	public async void Start() {
+		if (started)
+			return;
+		started = true;
+		await vm.InitializeAsync();
+	}
+
 	public void RestartUi() => (Application.Current as App)?.ReopenMainWindow();
+
+	public void Exit() => (Application.Current as App)?.Exit();
 
 	public Task<bool> Confirm(string message) => ShowMessage(message, Loc.T("PoeFree"), true);
 	public async Task Info(string message) => await ShowMessage(message, "PoeFree", false);
@@ -38,7 +66,7 @@ public partial class MainWindow : Window, IDialogs {
 			SizeToContent = SizeToContent.Height,
 			CanResize = false,
 			WindowStartupLocation = WindowStartupLocation.CenterOwner,
-			Background = new SolidColorBrush(Color.Parse("#1E2227")),
+			Background = Brush("#0E100B"),
 		};
 		var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Spacing = 8 };
 		var ok = new Button { Content = question ? Loc.T("yes") : Loc.T("ok"), Classes = { "primary" }, MinWidth = 80, HorizontalContentAlignment = HorizontalAlignment.Center };
@@ -52,21 +80,31 @@ public partial class MainWindow : Window, IDialogs {
 			no.Click += (_, _) => dialog.Close();
 			buttons.Children.Add(no);
 		}
-		dialog.Content = new StackPanel {
-			Margin = new Thickness(18),
-			Spacing = 16,
-			Children = {
-				new SelectableTextBlock {
-					Text = message,
-					TextWrapping = TextWrapping.Wrap,
-					Foreground = error ? new SolidColorBrush(Color.Parse("#FF8080")) : Brushes.White,
+		// PoE-style framed panel (see Themes/PoeTheme.axaml)
+		dialog.Content = new Border {
+			Classes = { "panel" },
+			Margin = new Thickness(8),
+			Padding = new Thickness(18),
+			Child = new StackPanel {
+				Spacing = 16,
+				Children = {
+					new SelectableTextBlock {
+						Text = message,
+						TextWrapping = TextWrapping.Wrap,
+						FontSize = 15,
+						Foreground = error ? Brush("#D2554A") : Brush("#C9C2AE"),
+					},
+					buttons,
 				},
-				buttons,
 			},
 		};
+		if (!IsVisible)
+			Show(); // a dialog needs a visible owner (PoeFree may be hidden in the notification area)
 		await dialog.ShowDialog(this);
 		return result;
 	}
+
+	static SolidColorBrush Brush(string hex) => new(Color.Parse(hex));
 
 	public async Task<string?> OpenFile(string title, string filterName, params string[] patterns) {
 		var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions {

@@ -34,13 +34,15 @@ O PoeFree modifica os arquivos do jogo no seu PC para remover efeitos pesados ou
 
 Outras funções:
 
+- **Vigia de atualizações do jogo**: com o PoeFree aberto (ou escondido na área de notificação), ele percebe quando o jogo atualizou, gera um relatório do que mudou com um botão **Copiar pedido de análise** e reaplica as suas opções sozinho quando o jogo é fechado. Ele nunca abre, fecha nem mexe no jogo. Veja [Quando o jogo atualiza](#quando-o-jogo-atualiza).
+- **Atualização do PoeFree em um clique**: quando sai versão nova, o botão **Atualizar agora** baixa o pacote do release no GitHub, confere o SHA-256, troca os executáveis e reabre o programa.
 - **Restaurar original**: volta ao arquivo `_.index.bin` original, usando o backup local ou o índice oficial baixado do CDN da GGG. Também apaga os bundles criados pelos mods, inclusive os do PoeSmoother (`PsCoreLib_*`).
 - **Restaurar antes de aplicar**: cada aplicação parte dos arquivos originais, então desmarcar uma opção realmente desfaz a mudança.
 - **Perfis**: salve e carregue suas configurações em JSON.
 - **Verificar arquivos do jogo**: abre o PackCheck (standalone) ou a verificação da Steam.
 - Detecta instalações **Standalone**, **Steam** e **Epic** do PoE1 e do PoE2.
 - **Avisos de compatibilidade**: quando o jogo atualiza, o PoeFree verifica sozinho as opções. Se alguma não encontrar mais os arquivos ou não conseguir alterá-los, aparece um aviso no topo, na opção e depois de aplicar.
-- **Aviso de nova versão**: ao iniciar, consulta os releases do GitHub (pode desligar na aba Sobre). É uma consulta anônima à API pública; nenhum dado seu é enviado.
+- **Aviso de nova versão**: ao iniciar, consulta os releases do GitHub (pode desligar na aba Sobre). É uma consulta anônima à API pública; nenhum dado seu é enviado. Nada é baixado nem instalado sem você clicar em **Atualizar agora**.
 - Interface em **português e inglês**.
 - **Linha de comando** (`poefree-cli.exe`) para automação.
 
@@ -51,10 +53,21 @@ Outras funções:
 3. Escolha o jogo, que é detectado automaticamente, ou clique em **Procurar...**:
    - Standalone: `...\Grinding Gear Games\Path of Exile\Content.ggpk`
    - Steam/Epic: `...\steamapps\common\Path of Exile\Bundles2\_.index.bin`
-4. Marque as opções, **feche o jogo** e clique em **Aplicar**. Leva alguns segundos.
-5. Para desfazer, clique em **Restaurar original**. Quando o jogo atualiza, os arquivos voltam ao original automaticamente; basta aplicar de novo.
+4. Marque as opções, **feche o jogo** e clique em **Aplicar**. Leva alguns segundos. Depois abra o jogo como sempre.
+5. Para desfazer, clique em **Restaurar original**. Quando o jogo atualiza, os arquivos voltam ao original; se o PoeFree estiver aberto, ele reaplica sozinho depois que você fechar o jogo.
 
 > Se a instalação está em `C:\Program Files (x86)` e aparecer erro de permissão, execute o PoeFree como administrador.
+
+### Deixar o PoeFree vigiando
+
+Na aba **Sobre**, em *Atualizações do jogo*:
+
+- **Vigiar atualizações do jogo enquanto o PoeFree estiver aberto** (ligado por padrão): a cada 5 segundos ele olha o `_.index.bin` do jogo, só lendo.
+- **Reaplicar minhas opções sozinho quando o jogo estiver fechado** (ligado por padrão).
+- **Ao fechar a janela, manter o PoeFree rodando na área de notificação**: o X esconde a janela; para sair de vez, use o menu do ícone.
+- **Iniciar com o Windows, escondido na área de notificação**: cria a entrada `PoeFree` em `HKCU\...\Run` com `PoeFree.exe --tray`.
+
+Só roda um PoeFree por vez: abrir de novo traz a janela que já está aberta.
 
 ### Linha de comando
 
@@ -66,7 +79,10 @@ poefree-cli apply "D:\Steam\steamapps\common\Path of Exile\Bundles2\_.index.bin"
 poefree-cli apply <arquivo> --preset maximum --dry-run --dump C:\saida   # não altera nada, só mostra/extrai o resultado
 poefree-cli restore <arquivo>
 poefree-cli check <arquivo>      # testa todas as opções (só leitura); código de saída 3 se alguma quebrou
+poefree-cli status <arquivo>     # jogo aberto?, versão, estado dos arquivos, última atualização vista (só leitura)
+poefree-cli diff <antigo> <novo> # compara dois _.index.bin salvos (--limit N)
 poefree-cli update               # procura versão nova no GitHub
+poefree-cli update --install     # baixa, confere o SHA-256 e instala por cima desta cópia
 poefree-cli ls <arquivo> metadata/environmentsettings/
 poefree-cli cat <arquivo> metadata/characters/character.ot
 poefree-cli extract <arquivo> shaders C:\shaders
@@ -100,9 +116,16 @@ Para criar uma opção nova, adicione uma classe que herda de `Patch` (pastas, e
 
 ## Quando o jogo atualiza
 
-1. O launcher da GGG volta os arquivos ao original: abra o PoeFree e clique em **Aplicar** de novo.
-2. O PoeFree roda o **Diagnóstico** sozinho. Se alguma opção ficar "Quebrada", ela precisa de ajuste no código, normalmente uma pasta ou nome de chave em `src/PoeFree.Core/Patching/Patches`.
-3. Para corrigir: rode `poefree-cli check <arquivo>`, ajuste a classe da opção, rode `dotnet test` e publique uma tag `vX.Y.Z`. O GitHub Actions gera o release, e quem usa recebe o aviso de nova versão.
+O jogo se atualiza quando é aberto e volta os arquivos ao original. Como os arquivos só podem ser alterados com o jogo fechado, **a primeira sessão depois de uma atualização roda sem as opções**. Com o PoeFree aberto:
+
+1. Ele percebe a atualização pelos arquivos (o índice muda e é conferido duas vezes seguidas, para não pegar um arquivo ainda sendo gravado).
+2. Roda o **Diagnóstico** nos arquivos novos, sem gravar nada, e escreve um relatório em `%APPDATA%\PoeFree\updates\<id>\update-<data>.md`: versão antiga e nova (lida do log do jogo), como cada opção ficou (arquivos encontrados e alterados antes e depois) e quais arquivos do jogo foram adicionados, removidos ou mudaram de tamanho.
+3. Aparece um aviso no topo com **Copiar pedido de análise**: copia uma mensagem pronta com o relatório para colar numa conversa com o Claude (ou numa issue) e pedir a adaptação do PoeFree. O relatório é feito em toda atualização, mesmo sem nada quebrado.
+4. Quando você fecha o jogo (e os arquivos ficam 20 s sem mudar), as opções são reaplicadas sozinhas. Se não der, aparece o motivo e o botão **Aplicar** resolve.
+
+Com o PoeFree fechado durante a atualização, ele percebe na próxima vez que abrir. Na primeira vez que vigia uma instalação, ele só guarda o estado atual; relatórios só aparecem a partir da atualização seguinte.
+
+Se alguma opção ficar "Quebrada", ela precisa de ajuste no código, normalmente uma pasta ou nome de chave em `src/PoeFree.Core/Patching/Patches`. Para corrigir: rode `poefree-cli check <arquivo>`, ajuste a classe da opção, rode `dotnet test` e publique uma tag `vX.Y.Z`. O GitHub Actions gera o release, e quem usa recebe o aviso de nova versão com o botão **Atualizar agora**.
 
 O repositório usado para os avisos é `irandsj/PoeFree` (constante `UpdateChecker.DefaultRepository`; forks podem mudar `updateRepository` no `settings.json`).
 
@@ -129,16 +152,18 @@ O repositório usado para os avisos é `irandsj/PoeFree` (constante `UpdateCheck
 - Profiles.
 - Restore through a local backup or the official CDN index.
 - Auto-detection of Standalone, Steam and Epic installs.
+- **Game update watch**: while PoeFree is open (or hidden in the notification area) it notices that the game updated, writes a report of what changed with a **Copy analysis request** button (a ready message to paste into a conversation with an assistant), and re-applies your options once the game is closed. It never starts, closes or touches the game itself, so the first session after an update runs without the options. Optional: keep running in the notification area, start with Windows.
+- One-click self-update: downloads the release package from GitHub, verifies its SHA-256, replaces the executables and restarts. Nothing is downloaded until you click **Update now**.
 - English/Portuguese UI.
-- Command line tool.
+- Command line tool (`apply`, `restore`, `check`, `status`, `diff`, `update --install`...).
 
 **Usage:**
 
 1. Start `PoeFree.exe` and click **Download oo2core** (Oodle is proprietary and is fetched from the LibGGPK3 release; you can also pick a local copy).
 2. Select the game.
-3. Choose the options, close the game and click **Apply**.
+3. Choose the options, close the game and click **Apply**. Then start the game as usual.
 
-Use **Restore original** to undo. Game updates also restore the files.
+Use **Restore original** to undo. Game updates also restore the files; leave PoeFree open and it applies your options again after you close the game.
 
 **How it works:** see [docs/COMO-FUNCIONA.md](docs/COMO-FUNCIONA.md) (technical notes, in Portuguese, with code references). In short: modified files are appended to new bundles (`Bundles2/LibGGPK3/*.bundle.bin`) and the index is redirected to them. The original bundles are never touched, so restoring only needs the original `_.index.bin`.
 

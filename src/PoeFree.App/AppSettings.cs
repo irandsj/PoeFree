@@ -17,6 +17,14 @@ public sealed class AppSettings {
 	public DateTime? LastUpdateCheckUtc { get; set; }
 	/// <summary>Release the user chose to ignore.</summary>
 	public string? IgnoredUpdate { get; set; }
+	/// <summary>While PoeFree is open, notice game updates (by looking at the game files) and write a report of what changed.</summary>
+	public bool WatchGameUpdates { get; set; } = true;
+	/// <summary>After a game update removed the applied options, apply them again once the game is closed.</summary>
+	public bool AutoReapply { get; set; } = true;
+	/// <summary>Closing the window keeps PoeFree running in the notification area.</summary>
+	public bool KeepInTray { get; set; }
+	/// <summary>Start with Windows, hidden in the notification area.</summary>
+	public bool StartWithWindows { get; set; }
 
 	/// <summary>Error raised while reading settings.json (shown in the log).</summary>
 	public static string? LoadError { get; private set; }

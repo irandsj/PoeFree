@@ -9,6 +9,7 @@ namespace PoeFree.Tests;
 /// Steam-layout folder containing Bundles2/_.index.bin plus the bundles needed by the tested options, and Oodle is available
 /// (POEFREE_OODLE or the usual locations). The tests never touch an installed game: everything runs on temporary copies.
 /// </summary>
+[Collection("data-directory")] // these tests redirect the global PoeFree data folder
 public class ArchiveIntegrationTests {
 	static string? Sandbox => Environment.GetEnvironmentVariable("POEFREE_SANDBOX");
 
