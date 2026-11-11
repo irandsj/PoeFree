@@ -14,6 +14,9 @@ public sealed class IgnoreList {
 	public IReadOnlyList<string> Prefixes => prefixes;
 	public int Count => prefixes.Count + patterns.Count;
 
+	/// <summary>Active entries in a stable form (comments and order do not matter).</summary>
+	public string Canonical => string.Join('\n', prefixes.Concat(patterns.Select(p => p.ToString())).Order(StringComparer.Ordinal));
+
 	public static IgnoreList Parse(string? text) {
 		var list = new IgnoreList();
 		if (string.IsNullOrEmpty(text))

@@ -47,10 +47,10 @@ public sealed class HealthItem(Core.Diagnostics.PatchHealth health) {
 	public string StatusText => Loc.T("health." + Health.Status);
 	public string Detail => Loc.HealthDetail(Health);
 	public IBrush Brush => new SolidColorBrush(Health.Status switch {
-		Core.Diagnostics.HealthStatus.Ok => Color.Parse("#4EC9B0"),
-		Core.Diagnostics.HealthStatus.Warning => Color.Parse("#FFD580"),
-		Core.Diagnostics.HealthStatus.Broken => Color.Parse("#FF8080"),
-		_ => Color.Parse("#7E8790"),
+		Core.Diagnostics.HealthStatus.Ok => Color.Parse("#5DBE5A"),
+		Core.Diagnostics.HealthStatus.Warning => Color.Parse("#D7A54A"),
+		Core.Diagnostics.HealthStatus.Broken => Color.Parse("#D2554A"),
+		_ => Color.Parse("#8A8470"),
 	});
 }
 

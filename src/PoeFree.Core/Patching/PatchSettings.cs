@@ -54,6 +54,18 @@ public sealed class PatchSettings {
 	}
 
 	public PatchSettings Clone() => FromJson(ToJson());
+
+	/// <summary>
+	/// Hash of everything that decides the result of an apply: these settings, the ignore list and the PoeFree version.
+	/// Used to tell whether the game files already have exactly these options applied.
+	/// </summary>
+	public string Fingerprint(IgnoreList ignore) {
+		var copy = Clone();
+		copy.Enabled = new HashSet<string>(StringComparer.Ordinal);
+		var text = string.Join(',', Enabled.Select(e => e.ToLowerInvariant()).Order(StringComparer.Ordinal)) + "\n"
+			+ copy.ToJson() + "\n" + ignore.Canonical + "\n" + typeof(PatchSettings).Assembly.GetName().Version;
+		return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(text)));
+	}
 }
 
 [JsonSerializable(typeof(PatchSettings))]

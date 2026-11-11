@@ -2,7 +2,13 @@ using System.Text.Json;
 
 namespace PoeFree.Core.Diagnostics;
 
-public sealed record UpdateInfo(Version Version, string Tag, string Url, string Notes);
+public sealed record UpdateInfo(Version Version, string Tag, string Url, string Notes) {
+	/// <summary>Download link of the package for this system (null if the release has none).</summary>
+	public string? PackageUrl { get; init; }
+	/// <summary>SHA-256 of the package as published by GitHub (hex), when available.</summary>
+	public string? PackageSha256 { get; init; }
+	public long PackageSize { get; init; }
+}
 
 /// <summary>
 /// Looks for a newer PoeFree release on GitHub (anonymous request to the public releases API; nothing about the user is sent).
@@ -50,6 +56,19 @@ public static class UpdateChecker {
 			return null;
 		var url = root.TryGetProperty("html_url", out var u) ? u.GetString() ?? "" : $"https://github.com/{repository}/releases/latest";
 		var notes = root.TryGetProperty("body", out var b) ? b.GetString() ?? "" : "";
-		return new UpdateInfo(version, tag!, url, notes);
+		var info = new UpdateInfo(version, tag!, url, notes);
+		if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
+			foreach (var asset in assets.EnumerateArray()) {
+				var name = asset.TryGetProperty("name", out var n) ? n.GetString() : null;
+				if (!string.Equals(name, SelfUpdater.PackageName, StringComparison.OrdinalIgnoreCase))
+					continue;
+				var digest = asset.TryGetProperty("digest", out var d) && d.ValueKind == JsonValueKind.String ? d.GetString() : null;
+				info = info with {
+					PackageUrl = asset.TryGetProperty("browser_download_url", out var dl) ? dl.GetString() : null,
+					PackageSha256 = digest is not null && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) ? digest[7..] : null,
+					PackageSize = asset.TryGetProperty("size", out var size) && size.TryGetInt64(out var bytes) ? bytes : 0,
+				};
+			}
+		return info;
 	}
 }

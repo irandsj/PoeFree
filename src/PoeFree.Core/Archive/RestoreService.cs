@@ -12,6 +12,8 @@ public sealed class BackupState {
 	public string? PatchedSha256 { get; set; }
 	public DateTime CreatedUtc { get; set; }
 	public DateTime? PatchedUtc { get; set; }
+	/// <summary>Fingerprint of the options used by the last apply (see <see cref="Patching.PatchSettings.Fingerprint"/>).</summary>
+	public string? SettingsFingerprint { get; set; }
 }
 
 [JsonSerializable(typeof(BackupState))]
@@ -44,6 +46,16 @@ public static class RestoreService {
 
 	public static string Sha256(ReadOnlySpan<byte> data) => Convert.ToHexString(SHA256.HashData(data));
 
+	/// <summary>The stored copy of the original index of this install, or null if there is none.</summary>
+	public static byte[]? ReadBackupIndex(string archivePath) {
+		var p = IndexBackupPath(archivePath);
+		try {
+			return File.Exists(p) ? File.ReadAllBytes(p) : null;
+		} catch (IOException) {
+			return null;
+		}
+	}
+
 	public static BackupState? LoadState(string archivePath) {
 		var p = StatePath(archivePath);
 		if (!File.Exists(p))
@@ -72,10 +84,13 @@ public static class RestoreService {
 	}
 
 	/// <summary>Remembers the index PoeFree just wrote, so a later restore knows the backup still matches.</summary>
-	public static void RecordPatched(string archivePath) {
+	/// <param name="settingsFingerprint">Fingerprint of the applied options; null keeps the stored one (manual file replacement).</param>
+	public static void RecordPatched(string archivePath, string? settingsFingerprint = null) {
 		var state = LoadState(archivePath) ?? throw new InvalidOperationException("No backup exists for this install.");
 		state.PatchedSha256 = Sha256(GameArchive.ReadRawIndex(archivePath));
 		state.PatchedUtc = DateTime.UtcNow;
+		if (settingsFingerprint is not null)
+			state.SettingsFingerprint = settingsFingerprint;
 		SaveState(archivePath, state);
 	}
 
@@ -140,9 +155,19 @@ public static class RestoreService {
 		if (state is not null) {
 			state.PatchedSha256 = null;
 			state.PatchedUtc = null;
+			state.SettingsFingerprint = null;
 			SaveState(archivePath, state);
 		}
 		return outcome;
+	}
+
+	/// <summary>
+	/// True if the index on disk is exactly the one PoeFree wrote with these options, i.e. applying again would change nothing.
+	/// </summary>
+	public static bool IsUpToDate(string archivePath, string settingsFingerprint) {
+		var state = LoadState(archivePath);
+		return state?.PatchedSha256 is not null && state.SettingsFingerprint == settingsFingerprint
+			&& state.PatchedSha256 == Sha256(GameArchive.ReadRawIndex(archivePath));
 	}
 
 	public static async Task<string> GetPatchCdnUrlAsync(GameVersion version) {

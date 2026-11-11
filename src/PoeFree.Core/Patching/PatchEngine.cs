@@ -164,6 +164,12 @@ public static class PatchEngine {
 				throw new InvalidOperationException("The game files are already modified. Restore them first (or enable 'Restore before apply').");
 			log?.Report("Restoring original files before applying...");
 			await RestoreService.RestoreAsync(archivePath, version, log, ct);
+		} else if (RestoreService.LoadState(archivePath)?.PatchedSha256 is not null) {
+			// PoeFree had patched this install and the index is original again: the game updated itself.
+			// Remove the mod bundles of the previous apply, which nothing references any more.
+			var leftovers = GameArchive.DeleteCustomBundles(archivePath);
+			if (leftovers > 0)
+				log?.Report($"The game was updated. Removed {leftovers} mod bundle(s) left by the previous apply.");
 		}
 		RestoreService.EnsureBackup(archivePath);
 		progress?.Report(0.02);
@@ -182,7 +188,7 @@ public static class PatchEngine {
 			summary = Commit(ctx, log, progress, sw) with { Problems = problems };
 		}
 		if (summary.FilesChanged + summary.FilesAdded > 0)
-			RestoreService.RecordPatched(archivePath);
+			RestoreService.RecordPatched(archivePath, settings.Fingerprint(ignore));
 		log?.Report($"Done: {summary.FilesChanged} file(s) modified, {summary.FilesAdded} added in {summary.Elapsed.TotalSeconds:0.0}s.");
 		return summary;
 	}

@@ -62,7 +62,7 @@ public sealed partial class CameraZoomPatch : Patch {
 	public override string Id => "camera.zoom";
 	public override PatchCategory Category => PatchCategory.Camera;
 	public override string Name => "Camera zoom";
-	public override string Description => "Sets a custom camera zoom (1.0 = game default, higher = further away) and removes scripted zoom changes of bosses/objects.";
+	public override string Description => "Sets a custom camera zoom (1.0 = game default, higher = further away) and removes scripted zoom changes of bosses/objects. Above ~2.2 the game ignores clicks near the screen edges (the game's own maximum action range).";
 
 	public const double Min = 1.0;
 	public const double Max = 3.0;

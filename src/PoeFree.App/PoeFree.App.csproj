@@ -6,7 +6,6 @@
     <RootNamespace>PoeFree.App</RootNamespace>
     <ApplicationIcon>Assets\poefree.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- Needed to detect the Windows display language (pt/en). -->
     <InvariantGlobalization>false</InvariantGlobalization>

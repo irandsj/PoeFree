@@ -1,6 +1,8 @@
 using System.Diagnostics;
+using System.Text.Json;
 using PoeFree.Core;
 using PoeFree.Core.Archive;
+using PoeFree.Core.Diagnostics;
 using PoeFree.Core.Game;
 using PoeFree.Core.Patching;
 using PoeFree.Core.Text;
@@ -29,6 +31,7 @@ if (home is not null)
 	AppPaths.SetDataDirectory(home);
 OodleResolver.PreferredPath = Option("--oodle");
 OodleResolver.Install();
+SelfUpdater.CleanupOldFiles();
 
 try {
 	switch (a[0]) {
@@ -85,24 +88,108 @@ try {
 			Console.WriteLine(text);
 			return 0;
 		}
+		case "grep": {
+			using var ar = GameArchive.Open(Arg(1));
+			var regex = new System.Text.RegularExpressions.Regex(Arg(2), System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Multiline);
+			var context = int.Parse(Option("--context") ?? "0");
+			var exts = Option("--ext")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+			var limit = int.Parse(Option("--limit") ?? "500");
+			var prefix = a.Count > 3 ? a[3] : "";
+			var paths = ar.PathsUnder(prefix).Where(p => exts is null ? PoeText.IsTextPath(p) : exts.Any(e => p.EndsWith(e, StringComparison.OrdinalIgnoreCase))).ToList();
+			var hits = 0;
+			var gate = new object();
+			ar.ReadMany(paths, (p, bytes) => {
+				var text = PoeText.Decode(bytes.Span);
+				if (!regex.IsMatch(text))
+					return;
+				var lines = text.Split('\n');
+				lock (gate) {
+					for (var i = 0; i < lines.Length && hits < limit; i++) {
+						if (!regex.IsMatch(lines[i]))
+							continue;
+						hits++;
+						for (var j = Math.Max(0, i - context); j <= Math.Min(lines.Length - 1, i + context); j++)
+							Console.WriteLine($"{p}:{j + 1}{(j == i ? ':' : '-')} {lines[j].TrimEnd()}");
+						if (context > 0)
+							Console.WriteLine("--");
+					}
+				}
+			});
+			Console.Error.WriteLine($"{hits} match(es) in {paths.Count} file(s) searched");
+			return 0;
+		}
 		case "check": {
 			using var ar = GameArchive.Open(Arg(1), true, Option("--cdn"));
 			if (ar.IsModified)
 				Console.WriteLine("Note: the game files are modified (restore them first for an accurate check).");
 			var sw = Stopwatch.StartNew();
-			var report = PoeFree.Core.Diagnostics.CompatibilityCheck.Run(ar, Flag("--verbose") ? log : null);
+			var report = CompatibilityCheck.Run(ar, Flag("--verbose") ? log : null);
 			if (!ar.IsModified)
-				PoeFree.Core.Diagnostics.CompatibilityCheck.Save(report);
+				CompatibilityCheck.Save(report);
 			foreach (var r in report.Results)
-				Console.WriteLine($"{r.Status,-8} {r.Id,-24} files={r.Targets,-6} changes={r.Changes,-6} {(r.Reason == PoeFree.Core.Diagnostics.HealthReason.None ? "" : r.Reason.ToString())} {string.Join("; ", r.Errors.Take(2))}");
-			var broken = report.Results.Count(r => r.Status == PoeFree.Core.Diagnostics.HealthStatus.Broken);
-			Console.WriteLine($"{report.Results.Count(r => r.Status == PoeFree.Core.Diagnostics.HealthStatus.Ok)} ok, {broken} broken, {report.Results.Count(r => r.Status == PoeFree.Core.Diagnostics.HealthStatus.Warning)} warning(s) in {sw.Elapsed.TotalSeconds:0}s");
+				Console.WriteLine($"{r.Status,-8} {r.Id,-24} files={r.Targets,-6} changes={r.Changes,-6} {(r.Reason == HealthReason.None ? "" : r.Reason.ToString())} {string.Join("; ", r.Errors.Take(2))}");
+			var broken = report.Results.Count(r => r.Status == HealthStatus.Broken);
+			Console.WriteLine($"{report.Results.Count(r => r.Status == HealthStatus.Ok)} ok, {broken} broken, {report.Results.Count(r => r.Status == HealthStatus.Warning)} warning(s) in {sw.Elapsed.TotalSeconds:0}s");
 			return broken > 0 ? 3 : 0;
 		}
 		case "update": {
-			Console.WriteLine("Current version: " + PoeFree.Core.Diagnostics.UpdateChecker.CurrentVersion);
-			var info = await PoeFree.Core.Diagnostics.UpdateChecker.CheckAsync(Option("--repo"));
-			Console.WriteLine(info is null ? "PoeFree is up to date." : $"New version {info.Tag}: {info.Url}");
+			var install = Flag("--install");
+			var dir = Option("--dir");
+			Console.WriteLine("Current version: " + UpdateChecker.CurrentVersion);
+			var info = await UpdateChecker.CheckAsync(Option("--repo"));
+			if (info is null) {
+				Console.WriteLine("PoeFree is up to date.");
+				return 0;
+			}
+			Console.WriteLine($"New version {info.Tag}: {info.Url}");
+			if (!install) {
+				Console.WriteLine("Run 'poefree-cli update --install' to download and install it.");
+				return 0;
+			}
+			dir ??= SelfUpdater.InstallDirectory
+				?? throw new InvalidOperationException("This is a development build: it is not replaced. Use --dir <folder> to update a PoeFree folder.");
+			var lastShown = -1;
+			var files = await SelfUpdater.UpdateAsync(info, dir, new SyncProgress<double>(p => {
+				var step = (int)(p * 10);
+				if (step > lastShown) {
+					lastShown = step;
+					Console.WriteLine($"Downloading {SelfUpdater.PackageName}: {step * 10}%");
+				}
+			}));
+			Console.WriteLine($"PoeFree {info.Tag} installed in {dir} ({string.Join(", ", files)}).");
+			return 0;
+		}
+		case "status": {
+			// Read-only: what the update watcher of the app sees for this install.
+			var path = Arg(1);
+			var game = new GameInstall(GameDetector.GuessVersion(path), GameDetector.GuessPlatform(path), path);
+			var probe = new GameProbe();
+			var raw = GameArchive.ReadRawIndex(path);
+			var sha = RestoreService.Sha256(raw);
+			var custom = RestoreService.CustomBundlesIn(raw, out _).Count;
+			var state = RestoreService.LoadState(path);
+			var baseline = GameUpdateTracker.LoadBaseline(path);
+			var files = custom == 0 ? "original" : state?.PatchedSha256 == sha ? "patched by PoeFree" : "modified by another tool";
+			Console.WriteLine($"Game running    : {(probe.IsRunning(game) ? "yes" : "no")}");
+			Console.WriteLine($"Game version    : {GameProbe.VersionLabel(probe.InstalledVersion(game)) ?? "unknown (no client log)"}");
+			Console.WriteLine($"Game files      : {files} (index {sha[..16]})");
+			Console.WriteLine($"Options removed : {(custom == 0 && state?.PatchedSha256 is not null ? "yes (the game updated: apply again)" : "no")}");
+			Console.WriteLine($"Last seen index : {(baseline is null ? "none yet" : $"{baseline.IndexSha256[..16]} ({GameProbe.VersionLabel(baseline.Version) ?? "version unknown"}, {baseline.SeenUtc:yyyy-MM-dd HH:mm} UTC)")}");
+			if (baseline?.PendingReportFile is { } pending)
+				Console.WriteLine($"Update report   : {pending}");
+			return 0;
+		}
+		case "diff": {
+			// Compares two saved _.index.bin files (what the update report is made of).
+			var diff = IndexDiff.Compare(File.ReadAllBytes(Arg(1)), File.ReadAllBytes(Arg(2)));
+			Console.WriteLine($"Files: {diff.OldFiles:N0} -> {diff.NewFiles:N0}; added {diff.Added.Count:N0}, removed {diff.Removed.Count:N0}, changed size {diff.Resized.Count:N0}, moved {diff.Moved:N0}");
+			var limit = int.Parse(Option("--limit") ?? "50");
+			foreach (var f in diff.Added.Take(limit))
+				Console.WriteLine("+ " + f);
+			foreach (var f in diff.Removed.Take(limit))
+				Console.WriteLine("- " + f);
+			foreach (var f in diff.Resized.Take(limit))
+				Console.WriteLine($"~ {f.Path} ({f.OldSize} -> {f.NewSize})");
 			return 0;
 		}
 		case "icons": {
@@ -223,11 +310,15 @@ static void PrintHelp() {
 		  info <archive>                      Show archive info (archive = Content.ggpk or Bundles2/_.index.bin)
 		  ls <archive> [prefix]               List files (--limit N)
 		  cat <archive> <path>                Print a text file
+		  grep <archive> <regex> [prefix]     Search text files (--ext .ot,.otc  --context N  --limit N)
 		  extract <archive> <path> <outdir>   Extract a file or folder
 		  apply <archive> [options]           Restore original files if needed, then apply options
 		  restore <archive>                   Restore the original game files
 		  check <archive>                     Test every option on the current game files (read-only); exit code 3 if some are broken
-		  update [--repo owner/name]          Check GitHub for a newer PoeFree release
+		  status <archive>                    Game running? version, state of the files, last game update seen (read-only)
+		  diff <old index> <new index>        Compare two saved _.index.bin files (--limit N)
+		  update [--install]                  Check GitHub for a newer PoeFree release; --install downloads, verifies
+		                                      (SHA-256) and installs it over this copy  (--repo owner/name)
 		  oodle [download | import <dll>]     Check / download / import the Oodle library (oo2core)
 
 		Apply options:
@@ -246,4 +337,9 @@ static void PrintHelp() {
 
 		Close the game before 'apply' or 'restore'.
 		""");
+}
+
+/// <summary>Progress that calls back on the reporting thread (Progress&lt;T&gt; would print out of order in a console app).</summary>
+sealed class SyncProgress<T>(Action<T> handler) : IProgress<T> {
+	public void Report(T value) => handler(value);
 }
